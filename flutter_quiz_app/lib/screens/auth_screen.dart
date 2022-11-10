@@ -112,7 +112,8 @@ class AuthCard extends StatefulWidget {
 class _AuthCardState extends State<AuthCard> {
 
 
-  final GlobalKey<FormState> _formKey = GlobalKey();
+  final GlobalKey<FormState> _formSignupKey = GlobalKey();
+  final GlobalKey<FormState> _formLoginKey = GlobalKey();
   List<Stream?> _selectedStreams = [];
   List streamlist = [];
   List<MultiSelectItem<Stream>> _items = [];
@@ -186,7 +187,7 @@ class _AuthCardState extends State<AuthCard> {
     var _isLoading = false;
     final _passwordController = TextEditingController();
 
-    Future<void> _saveForm() async {
+    Future<void> _saveSignupForm() async {
       bool validable = true;
       bool nonvalidable = true;
       if((_authSignUpData["gender"]== "") || (_authSignUpData["dateOfBirth"] ==
@@ -196,26 +197,24 @@ class _AuthCardState extends State<AuthCard> {
         });
         nonvalidable = false;
       }
-      var validate = _formKey.currentState?.validate();
+      var validate = _formSignupKey.currentState?.validate();
       if (!validate!) {
         validable = false;
       }
         if(!validable || !nonvalidable){
           return;
         }
-      _formKey.currentState?.save();
+      _formSignupKey.currentState?.save();
       setState(() {
         _isLoading = true;
       });
       try {
-        if (widget._authMode == AuthMode.Login) {
-          await Provider.of<Auth>(context, listen: false).login(_authLoginData);
-        } else {
+
           await Provider.of<Auth>(context, listen: false).signup
             (_authSignUpData).then((value) {
             widget._switchAuthMode;
           });
-        }
+
       }
       // on HttpExceptions catch(error){
       //   var errorMessage = 'Authentication failed';
@@ -242,6 +241,44 @@ class _AuthCardState extends State<AuthCard> {
         _isLoading = false;
       });
     }
+  Future<void> _saveLoginForm() async {
+
+    var validate = _formLoginKey.currentState?.validate();
+    if (!validate!) {
+      return;
+    }
+    _formLoginKey.currentState?.save();
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+        await Provider.of<Auth>(context, listen: false).login(_authLoginData);
+    }
+    // on HttpExceptions catch(error){
+    //   var errorMessage = 'Authentication failed';
+    //   if (error.toString().contains('EMAIL_EXISTS')) {
+    //     errorMessage = 'This email address is already in use.';
+    //   } else if (error.toString().contains('INVALID_EMAIL')) {
+    //     errorMessage = 'This is not a valid email address';
+    //   } else if (error.toString().contains('WEAK_PASSWORD')) {
+    //     errorMessage = 'This password is too weak.';
+    //   } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
+    //     errorMessage = 'Could not find a user with that email.';
+    //   } else if (error.toString().contains('INVALID_PASSWORD')) {
+    //     errorMessage = 'Invalid password.';
+    //   }
+    //   _showErrorDialog(errorMessage);
+    //
+    // }
+    catch (error) {
+      const errorMessage =
+          'Could not authenticate you. Please try again later.';
+      _showErrorDialog(errorMessage);
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
     void _showErrorDialog(String errormsg) {
       showDialog(
@@ -293,7 +330,7 @@ class _AuthCardState extends State<AuthCard> {
           height: devicesize.height,
           padding: EdgeInsets.all(16.0),
           child: Form(
-            key: _formKey,
+            key: _formSignupKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -536,7 +573,7 @@ class _AuthCardState extends State<AuthCard> {
                               ? CircularProgressIndicator()
                               : ElevatedButton(
                             child: Text('SIGN UP'),
-                            onPressed: _saveForm,
+                            onPressed: _saveSignupForm,
                             style: ButtonStyle(
                               backgroundColor:
                               MaterialStateProperty.all(
@@ -574,7 +611,7 @@ class _AuthCardState extends State<AuthCard> {
             width: devicesize.width * 100,
             padding: EdgeInsets.all(16.0),
             child: Form(
-              key: _formKey,
+              key: _formLoginKey,
               child: SingleChildScrollView(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -611,7 +648,7 @@ class _AuthCardState extends State<AuthCard> {
                           ? CircularProgressIndicator()
                           : ElevatedButton(
                         child: Text("Login"),
-                        onPressed: _saveForm,
+                        onPressed: _saveLoginForm,
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
                               Colors.deepOrangeAccent),
