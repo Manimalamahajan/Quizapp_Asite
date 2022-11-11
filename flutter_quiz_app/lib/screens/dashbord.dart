@@ -6,6 +6,7 @@ import './logout.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import '../providers/interested_stream_provider.dart';
+import 'info_screen.dart';
 
 
 class Dashbord extends StatefulWidget {
@@ -42,6 +43,8 @@ class _DashbordState extends State<Dashbord> {
             interested_Streams.add({
               "streamName": streams[j]["name"],
               "streamimgUrl": streams[j]["url"],
+              "streamId":streams[j]["id"],
+              "fieldId":interestedstreamProvider.interestedStreamsList[i]["id"]
             });
           }
         }
@@ -86,7 +89,12 @@ class _DashbordState extends State<Dashbord> {
                 itemCount: interested_Streams.length,
                 itemBuilder: (BuildContext context, int index) {
                   return InkWell(
-                    onTap: () => null,
+                    onTap: () {Navigator.of(context).pushNamed(InfoScreen
+                        .routeName,arguments: {
+                      "streamId":interested_Streams[index]["streamId"],
+                      "fieldId":interested_Streams[index]["fieldId"],
+                      "streamName":interested_Streams[index]["streamName"]
+                    });},
                     splashColor: Theme
                         .of(context)
                         .primaryColor,

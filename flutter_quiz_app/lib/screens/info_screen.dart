@@ -2,20 +2,35 @@ import 'package:flutter/material.dart';
 import './drawer.dart';
 import './logout.dart';
 import 'package:flutter_svg/svg.dart';
+import 'quiz.dart';
+import 'package:provider/provider.dart';
+import '../providers/test_token.dart';
 
-class InfoScreen extends StatelessWidget {
+class InfoScreen extends StatefulWidget {
   const InfoScreen({Key? key}) : super(key: key);
   static final routeName = '/info';
+
+  @override
+  State<InfoScreen> createState() => _InfoScreenState();
+}
+
+class _InfoScreenState extends State<InfoScreen> {
+
+
+
   @override
   Widget build(BuildContext context) {
+    final Map ids = ModalRoute.of(context)?.settings.arguments as Map;
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Test Information'),
-        actions: [
-          Logout(),
-        ],
+        // actions: [
+        //   Logout(),
+        // ],
       ),
-      drawer: AppDrawer(),
+      // drawer: AppDrawer(),
       body: Stack(
         children: [
         SvgPicture.asset("assets/images/bg.svg", fit: BoxFit.fill,width:
@@ -24,7 +39,7 @@ class InfoScreen extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(
-              height: 20,
+              height: 10,
             ),
             Text(
               'RULES AND REGULATION',
@@ -103,14 +118,40 @@ class InfoScreen extends StatelessWidget {
               height: 10,
             ),
             ElevatedButton(
-                onPressed: null,
+                onPressed: () async{
+                  final tokenProvider =  Provider.of<TestToken>(context,
+                      listen: false);
+                  await tokenProvider.fetchTestToken(ids["streamId"], ids["fieldId"]);
+                  final String testToken = tokenProvider.testtoken["testToken"];
+                  print(testToken);
+                  if(testToken.isNotEmpty){
+                    Navigator.of(context).pushNamed(QuizScreen
+                        .routeName,arguments:{
+                      "testToken": testToken,
+                      "streamId":ids["streamId"],
+                      "fieldId":ids["fieldId"],
+                      "streamName":ids["streamName"],
+                    } );
+                  }
+                  },
                 child: Text("Start Test"),
-                style: ButtonStyle(
-                  elevation: MaterialStateProperty.all(8),
-                    backgroundColor: MaterialStateProperty.all(Colors.green),
-                    foregroundColor: MaterialStateProperty.all(Colors.white)))
-          ],
-        ),
+              style: ButtonStyle(
+                backgroundColor:
+                MaterialStateProperty.all(
+                    Colors.deepOrangeAccent),
+                foregroundColor:
+                MaterialStateProperty.all(
+                    Colors.white),
+                shape: MaterialStateProperty.all<
+                    RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius:
+                    BorderRadius.circular(18.0),
+                  ),
+                ),
+              ),
+          ),
+       ] ),
       ),]
       ));
   }
@@ -123,7 +164,7 @@ class MyBullet extends StatelessWidget {
       height: 10.0,
       width: 10.0,
       decoration: new BoxDecoration(
-        color: Colors.green,
+        color: Colors.deepOrangeAccent,
         shape: BoxShape.circle,
       ),
     );

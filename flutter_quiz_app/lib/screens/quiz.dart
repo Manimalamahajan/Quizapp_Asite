@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
+import '../providers/get_questions.dart';
+import '../providers/attempt_count.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({Key? key}) : super(key: key);
@@ -9,10 +12,63 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  String? option;
+  var _isInit = true;
+  var _isLoading = false;
+   Map args ={};
+   int attemptCount = 0;
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() async{
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      await _fetchQuestions();
+      await _fetchAttemptInfo();
+
+        setState(() {
+          _isLoading = false;
+        });
+
+
+    }
+    setState(() {
+      _isInit = false;
+    });
+    super.didChangeDependencies();
+  }
+
+  Future<void> _fetchQuestions() async{
+     args = ModalRoute.of(context)?.settings.arguments as Map;
+    final questionProvider =  Provider.of<GetQuestions>(context);
+    await questionProvider.fetchTestQuestions(args["streamId"],
+      args["fieldId"],args["testToken"]);
+    final List questionsList = questionProvider.questionsList;
+    print(questionsList);
+  }
+  Future<void> _fetchAttemptInfo() async{
+
+    final attemptProvider =  Provider.of<AttemptCount>(context,listen: false);
+    await attemptProvider.fetchAttemptCount();
+    final List attemptList = attemptProvider.attemptList;
+    print(attemptList);
+
+    setState(() {
+      attemptCount = attemptList.length + 1;
+    });
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
         appBar: AppBar(
           title: Text("Quiz Screen"),
@@ -25,10 +81,11 @@ class _QuizScreenState extends State<QuizScreen> {
               SizedBox(height: 30,),
           Card(
           child: ListTile(
-          leading: Text("Stream: Flutter", style: TextStyle(fontSize:
+          leading: Text("Stream: ${args["streamName"]}", style: TextStyle
+            (fontSize:
           18, fontWeight: FontWeight.bold),),
             trailing: Text(
-              "Attempt: First", style: TextStyle(fontSize: 18, fontWeight:
+              "Attempt: $attemptCount", style: TextStyle(fontSize: 18, fontWeight:
             FontWeight.bold),
             ),),
           ),
@@ -45,8 +102,8 @@ class _QuizScreenState extends State<QuizScreen> {
 
             RadioListTile(
               title: Text("option1"),
-              value: "option1",
-              groupValue: option,
+              value: "",
+              groupValue: 'option',
               onChanged: (value) {
                 setState(() {
                   //gender = value.toString();
@@ -56,8 +113,8 @@ class _QuizScreenState extends State<QuizScreen> {
 
             RadioListTile(
               title: Text("option2"),
-              value: "option2",
-              groupValue: option,
+              value: "",
+              groupValue: 'option',
               onChanged: (value) {
                 setState(() {
                   //gender = value.toString();
@@ -67,8 +124,8 @@ class _QuizScreenState extends State<QuizScreen> {
 
             RadioListTile(
               title: Text("option3"),
-              value: "option3",
-              groupValue: option,
+              value: "",
+              groupValue: 'option',
               onChanged: (value) {
                 setState(() {
                   //gender = value.toString();
@@ -77,8 +134,8 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             RadioListTile(
               title: Text("option4"),
-              value: "option4",
-              groupValue: option,
+              value: "",
+              groupValue: 'option',
               onChanged: (value) {
                 setState(() {
                   //gender = value.toString();

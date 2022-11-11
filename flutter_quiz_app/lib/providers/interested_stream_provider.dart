@@ -15,6 +15,7 @@ class InterestedStream with ChangeNotifier{
       final response = await  NetworkCall().getRequest('user/getInterestedStream',
           {"Authorization": "Bearer $token",'Content-Type':'application/json'});
       _interestedStreamsList = response;
+      print(_interestedStreamsList);
     } catch (error) {
       throw error;
     }

@@ -19,6 +19,9 @@ import './providers/interested_stream_provider.dart';
 import './providers/user_profile.dart';
 import './providers/short_profile.dart';
 import './providers/user_profile.dart';
+import './providers/test_token.dart';
+import './providers/get_questions.dart';
+import './providers/attempt_count.dart';
 
 
 void main() => runApp(MyApp());
@@ -38,6 +41,7 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider.value(
             value: Streamprovider(),
           ),
+
           ChangeNotifierProxyProvider<Auth, InterestedStream>(
             create: (_) => InterestedStream(""),
             update: (ctx, auth, previousStreams) => InterestedStream(
@@ -59,6 +63,24 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProxyProvider<Auth, Update_Profile>(
             create: (_) => Update_Profile(""),
             update: (ctx, auth, previousStreams) => Update_Profile(
+              auth.token != null ? auth.token! : "",
+            ),
+          ),
+          ChangeNotifierProxyProvider<Auth, TestToken>(
+            create: (_) => TestToken(""),
+            update: (ctx, auth, previousStreams) => TestToken(
+              auth.token != null ? auth.token! : "",
+            ),
+          ),
+          ChangeNotifierProxyProvider<Auth, GetQuestions>(
+            create: (_) => GetQuestions(""),
+            update: (ctx, auth, previousStreams) => GetQuestions(
+              auth.token != null ? auth.token! : "",
+            ),
+          ),
+          ChangeNotifierProxyProvider<Auth, AttemptCount>(
+            create: (_) => AttemptCount(""),
+            update: (ctx, auth, previousStreams) => AttemptCount(
               auth.token != null ? auth.token! : "",
             ),
           ),
