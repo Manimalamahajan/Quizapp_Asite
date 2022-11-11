@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth.dart';
-import 'package:http/http.dart' as http;
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import '../models/stream.dart';
 import 'package:intl/intl.dart';
@@ -11,7 +9,6 @@ import '../providers/country_provider.dart';
 import '../providers/stream_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/svg.dart';
-import '../models/http_exception.dart';
 
 List<dynamic> countryList =[];
 
@@ -123,7 +120,8 @@ class _AuthCardState extends State<AuthCard> {
   String value1= "male";
   String value2= "female";
 
-  bool _check = false;
+  bool _checkGender = false;
+  bool _checkDOB = false;
 
   @override
   void initState() {
@@ -188,20 +186,28 @@ class _AuthCardState extends State<AuthCard> {
     final _passwordController = TextEditingController();
 
     Future<void> _saveSignupForm() async {
-      bool validable = true;
-      bool nonvalidable = true;
-      if((_authSignUpData["gender"]== "") || (_authSignUpData["dateOfBirth"] ==
-          "")){
+      bool validator = true;
+      bool genderValidator = true;
+      bool dobValidator = true;
+      if(_authSignUpData["gender"]== ""){
         setState(() {
-          _check = true;
+          _checkGender = true;
         });
-        nonvalidable = false;
+        genderValidator = false;
       }
+
+      if ((_authSignUpData["dateOfBirth"] == "")) {
+        setState(() {
+          _checkDOB = true;
+        });
+        dobValidator = false;
+      }
+
       var validate = _formSignupKey.currentState?.validate();
       if (!validate!) {
-        validable = false;
+        validator = false;
       }
-        if(!validable || !nonvalidable){
+        if(!validator || !genderValidator || !dobValidator){
           return;
         }
       _formSignupKey.currentState?.save();
@@ -215,24 +221,7 @@ class _AuthCardState extends State<AuthCard> {
             widget._switchAuthMode;
           });
 
-      }
-      // on HttpExceptions catch(error){
-      //   var errorMessage = 'Authentication failed';
-      //   if (error.toString().contains('EMAIL_EXISTS')) {
-      //     errorMessage = 'This email address is already in use.';
-      //   } else if (error.toString().contains('INVALID_EMAIL')) {
-      //     errorMessage = 'This is not a valid email address';
-      //   } else if (error.toString().contains('WEAK_PASSWORD')) {
-      //     errorMessage = 'This password is too weak.';
-      //   } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
-      //     errorMessage = 'Could not find a user with that email.';
-      //   } else if (error.toString().contains('INVALID_PASSWORD')) {
-      //     errorMessage = 'Invalid password.';
-      //   }
-      //   _showErrorDialog(errorMessage);
-      //
-      // }
-      catch (error) {
+      } catch (error) {
         const errorMessage =
             'Could not authenticate you. Please try again later.';
          _showErrorDialog(errorMessage);
@@ -253,24 +242,7 @@ class _AuthCardState extends State<AuthCard> {
     });
     try {
         await Provider.of<Auth>(context, listen: false).login(_authLoginData);
-    }
-    // on HttpExceptions catch(error){
-    //   var errorMessage = 'Authentication failed';
-    //   if (error.toString().contains('EMAIL_EXISTS')) {
-    //     errorMessage = 'This email address is already in use.';
-    //   } else if (error.toString().contains('INVALID_EMAIL')) {
-    //     errorMessage = 'This is not a valid email address';
-    //   } else if (error.toString().contains('WEAK_PASSWORD')) {
-    //     errorMessage = 'This password is too weak.';
-    //   } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
-    //     errorMessage = 'Could not find a user with that email.';
-    //   } else if (error.toString().contains('INVALID_PASSWORD')) {
-    //     errorMessage = 'Invalid password.';
-    //   }
-    //   _showErrorDialog(errorMessage);
-    //
-    // }
-    catch (error) {
+    } catch (error) {
       const errorMessage =
           'Could not authenticate you. Please try again later.';
       _showErrorDialog(errorMessage);
@@ -310,6 +282,9 @@ class _AuthCardState extends State<AuthCard> {
         setState(() {
           _authSignUpData['dateOfBirth'] =
               DateFormat('dd-MM-yyyy').format(pickeddate);
+          setState(() {
+            _checkDOB = false;
+          });
         });
       });
     }
@@ -419,6 +394,7 @@ class _AuthCardState extends State<AuthCard> {
                                 onChanged: (value) {
                                   setState(() {
                                     _radioValue = value!;
+                                    _checkGender = false;
                                   });
                                   _authSignUpData['gender'] =
                                       _radioValue.toString();
@@ -438,6 +414,7 @@ class _AuthCardState extends State<AuthCard> {
                                 onChanged: (value) {
                                   setState(() {
                                     _radioValue = value!;
+                                    _checkGender = false;
                                   });
                                   _authSignUpData['gender'] =
                                       _radioValue.toString();
@@ -447,7 +424,7 @@ class _AuthCardState extends State<AuthCard> {
                         ),
                       ),
                     ]),
-                _check ? Text("Select gender",style: TextStyle(color: Colors
+                _checkGender ? Text("Select gender",style: TextStyle(color: Colors
                     .red),):Text(""),
                 Padding(
                   padding: const EdgeInsets.all(0.0),
@@ -461,7 +438,7 @@ class _AuthCardState extends State<AuthCard> {
                           ),
                           onPressed: _selectDate,
                         ),
-                        _check ? Text("Choose date",style:TextStyle(color:
+                        _checkDOB ? Text("Choose date",style:TextStyle(color:
                         Colors.red),)
                             :Text
                           (_authSignUpData['dateOfBirth']!)
